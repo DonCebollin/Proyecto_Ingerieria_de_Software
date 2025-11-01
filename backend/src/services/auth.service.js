@@ -80,7 +80,7 @@ export async function registerService(user) {
       email,
       rut,
       password: await encryptPassword(user.password),
-      rol: "usuario",
+      rol: "estudiante",
     });
 
     await userRepository.save(newUser);
