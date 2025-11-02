@@ -20,24 +20,57 @@ const PracticaSchema = new EntitySchema({
     },
     fecha_inicio: {
       type: "date",
-      nullable: true,
+      nullable: false,
     },
     fecha_fin: {
       type: "date",
-      nullable: true,
+      nullable: false,
     },
     horas_practicas: {
       type: "int",
-      nullable: true,
+      nullable: false,
     },
     semanas: {
       type: "int",
-      nullable: true,
+      nullable: false,
     },
-    tipo_presencia:{
+    tipo_presencia: {
       type: "enum",
-      enum: ["presencial", "virtual"],
+      enum: ["presencial", "virtual", "hibrido"],
       default: "presencial",
+    },
+    tipo_practica: {
+      type: "enum",
+      enum: ["publicada", "propia"],
+      nullable: false,
+    },
+    empresa: {
+      type: "varchar",
+      length: 255,
+      nullable: false,
+    },
+    supervisor_nombre: {
+      type: "varchar",
+      length: 255,
+      nullable: false,
+    },
+    supervisor_email: {
+      type: "varchar",
+      length: 255,
+      nullable: false,
+    },
+    supervisor_telefono: {
+      type: "varchar",
+      length: 20,
+      nullable: false,
+    },
+    documentos: {
+      type: "simple-json",
+      nullable: false,
+    },
+    observaciones: {
+      type: "text",
+      nullable: true,
     },
     nota_practica: {
       type: "decimal",
@@ -47,8 +80,17 @@ const PracticaSchema = new EntitySchema({
     },
     estado: {
       type: "enum",
-      enum: ["activa", "en_progreso", "finalizada", "cancelada"],
-      default: "activa",
+      enum: ["Revision_Pendiente", "Aprobada", "Rechazada", "En_Curso", "Finalizada"],
+      default: "Revision_Pendiente",
+    },
+    fecha_creacion: {
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP",
+    },
+    fecha_actualizacion: {
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP",
     },
   },
   relations: {
