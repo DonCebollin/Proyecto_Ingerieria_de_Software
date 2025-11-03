@@ -30,7 +30,7 @@ const PracticaSchema = new EntitySchema({
       type: "int",
       nullable: true,
     },
-    horas_semanales: {
+    semanas: {
       type: "int",
       nullable: true,
     },
@@ -41,7 +41,7 @@ const PracticaSchema = new EntitySchema({
     },
     nota_practica: {
       type: "decimal",
-      precision: 2,
+      precision: 3,
       scale: 1,
       nullable: true,
     },

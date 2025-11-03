@@ -8,65 +8,83 @@ const BitacoraSchema = new EntitySchema({
     id_bitacora: {
       type: "int",
       primary: true,
-      generated: true,
+      generated: true
     },
 
     id_practica: {
       type: "int",
-      nullable: false,
+      nullable: false
     },
 
     semana: {
       type: "int",
-      nullable: false,
+      nullable: false
+    },
+
+    horas_trabajadas: {
+      type: "decimal",
+      precision: 4,
+      scale: 1,
+      nullable: false
     },
 
     descripcion_actividades: {
       type: "text",
-      nullable: false,
+      nullable: false
     },
 
     resultados_aprendizajes: {
       type: "text",
-      nullable: false,
+      nullable: false
     },
 
-    nombre_archivobitaora: {
+    nombre_archivo: {
       type: "varchar",
       length: 255,
-      nullable: false,
+      nullable: true
     },
-    ruta_archivobitacora: {
+
+    ruta_archivo: {
       type: "varchar",
       length: 500,
-      nullable: false,
+      nullable: true
     },
-    formato: {
+
+    formato_archivo: {
       type: "varchar",
       length: 10,
-      nullable: false,
+      nullable: true
     },
-    peso_mb: {
+
+    peso_archivo_mb: {
       type: "decimal",
       precision: 5,
       scale: 2,
-      nullable: false,
-    },
-    fecha_subidabitacora: {
-      type: "timestamp with time zone",
-      default: () => "CURRENT_TIMESTAMP",
-      nullable: false,
-    },
-    estado_revisionbitacora: {
-      type: "enum",
-      enum: ["pendiente", "revisado"],
-      default: "pendiente",
+      nullable: true
     },
 
-    notabitacora: {
-      type: "float",
-      length: 7,
-      nullable: false,
+    fecha_registro: {
+      type: "timestamp with time zone",
+      default: () => "CURRENT_TIMESTAMP",
+      nullable: false
+    },
+
+    estado_revision: {
+      type: "varchar",
+      length: 20,
+      default: "en_progreso",
+      nullable: false
+    },
+
+    nota: {
+      type: "decimal",
+      precision: 2, 
+      scale: 1,      
+      nullable: true,
+      check: {
+        name: "check_nota_rango",
+        expression: `nota >= 1.0 AND nota <= 7.0`
+      }
     },
   },
 
