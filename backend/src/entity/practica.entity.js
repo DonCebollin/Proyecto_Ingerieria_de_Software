@@ -16,7 +16,7 @@ const PracticaSchema = new EntitySchema({
     },
     id_docente: {
       type: "int",
-      nullable: false,
+      nullable: true,
     },
     fecha_inicio: {
       type: "date",

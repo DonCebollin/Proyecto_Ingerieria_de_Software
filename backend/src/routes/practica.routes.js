@@ -1,23 +1,58 @@
-const express=require('express');
-const router=express.Router();
-const practicaController=require('../controllers/practica.controller');
-const {authenticateToken}=require('../middlewares/authentication.middleware');
-const {isStudent, isEncargadoPracticas}=require('../middlewares/authentication.middleware');
-const {validarCreacionPractica}=require('../validations/practica.validation');
+import express from "express";
+import practicaController from "../controllers/practica.controller.js";
+import { authenticateToken } from "../middlewares/authentication.middleware.js";
+import { isEncargadoPracticas, isStudent } from "../middlewares/authentication.middleware.js";
+import { practicaBodyValidation } from "../validations/practica.validation.js";
 
-//rutas para estudiante
-router.post('/crear',authenticateToken,isStudent,validarCreacionPractica,practicaController.crearPractica);
+const router = express.Router();
 
-router.get('/mis-practicas',authenticateToken,isStudent,practicaController.obtenerPracticasEstudiante);
+// Middleware de validación
+const validarPractica = (req, res, next) => {
+    const { error } = practicaBodyValidation.validate(req.body);
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
+    next();
+};
 
-router.put('/actualizar/:id',authenticateToken,isEncargadoPracticas,practicaController.actualizarPractica);
+// Rutas para estudiante
+router.post("/crear", 
+    authenticateToken, 
+    isStudent, 
+    validarPractica, 
+    practicaController.crearPractica
+);
 
-//rutas para el encargado de practica
-router.get('/todas',authenticateToken,isEncargadoPracticas,practicaController.obtenerTodasPracticas);
+router.get("/mis-practicas", 
+    authenticateToken, 
+    isStudent, 
+    practicaController.obtenerPracticasEstudiante
+);
 
-router.put('estado/:id',authenticateToken,isEncargadoPracticas,practicaController.actualizarEstadoPractica);
+router.put("/actualizar/:id", 
+    authenticateToken, 
+    isStudent, 
+    validarPractica, 
+    practicaController.actualizarPractica
+);
 
-//rutas compartidas
-router.get('/:id',authenticateToken,practicaController.obtenerPracticaPorId);
+// Rutas para el encargado de práctica
+router.get("/todas", 
+    authenticateToken, 
+    isEncargadoPracticas, 
+    practicaController.obtenerTodasPracticas
+);
 
-module.exports=router;
+router.put("/estado/:id", 
+    authenticateToken, 
+    isEncargadoPracticas, 
+    practicaController.actualizarEstadoPractica
+);
+
+// Rutas compartidas
+router.get("/:id", 
+    authenticateToken, 
+    practicaController.obtenerPracticaPorId
+);
+
+export default router;

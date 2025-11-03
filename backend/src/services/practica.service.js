@@ -1,73 +1,99 @@
-const Practica=require('../entity/practica.entity');
-const {getRepository}=require('typeorm');
+import Practica from "../entity/practica.entity.js";
+import { AppDataSource } from "../config/configDb.js";
 
-export async function crearPractica(datosPractica){
-    const practicaRepository=getRepository(Practica);
-    const nuevaPractica=practicaRepository.create({...datosPractica,fecha_creacion:new Date(),estado: 'Revision_Pendiente'});
-    return await practicaRepository.save(nuevaPractica);
-}
+const practicaService = {
+    async validarRequisitosPractica(datosPractica) {
+        if (!datosPractica.empresa) {
+            throw new Error("La empresa debe estar asignada en la práctica");
+        }
 
-export async function obtenerPracticasEstudiante(idEstudiante){
-    const practicaRepository=getRepository(Practica);
-    return await practicaRepository.find({where:{estudiante:idEstudiante},
-        relations:['empresa','supervisor']});
-}
+        if (!datosPractica.supervisor_nombre || !datosPractica.supervisor_email || !datosPractica.supervisor_telefono) {
+            throw new Error("Los datos del supervisor son obligatorios (nombre, email y teléfono)");
+        }
 
-export async function obtenerPracticaPorId(id){
-    const practicaRepository=getRepository(Practica);
-    return await practicaRepository.findOne({where: {id_practica:id},
-        relations:['Estudiante','Empresa','Supervisor']});
-}
+        if (!datosPractica.fecha_inicio || !datosPractica.fecha_fin) {
+            throw new Error("El periodo de la práctica debe estar definido correctamente");
+        }
 
-export async function actualizarEstadoPractica(id,estado,observaciones){
-    const practicaRepository=getRepository(Practica);
-    const practica=await practicaRepository.findOne({where:{id_practica:id}});
-    if(!practica){
-        return null;
-    }
+        if (!datosPractica.horas_practicas || !datosPractica.semanas) {
+            throw new Error("Las horas y semanas de práctica son obligatorias");
+        }
 
-    practica.estado=estado;
-    practica.observaciones=observaciones;  
-    practica.fecha_actualizacion=new Date();
+        if (!datosPractica.tipo_practica || !["publicada", "propia"].includes(datosPractica.tipo_practica)) {
+            throw new Error("El tipo de práctica debe ser \"publicada\" o \"propia\"");
+        }
+    },
+    async crearPractica(datosPractica) {
+        await this.validarRequisitosPractica(datosPractica);
+        const practicaRepository = AppDataSource.getRepository(Practica);
+        const nuevaPractica = practicaRepository.create({
+            ...datosPractica,
+            fecha_creacion: new Date(),
+            estado: "Revision_Pendiente"
+        });
+        return await practicaRepository.save(nuevaPractica);
+    },
 
-    return await practicaRepository.save(practica);
-}
+    async obtenerTodasPracticas() {
+        const practicaRepository = AppDataSource.getRepository(Practica);
+        return await practicaRepository.find({
+            relations: ["estudiante", "docente"]
+        });
+    },
 
-export async function actualizarPractica(id,datosActualizacion){
-    const practicaRepository=getRepository(Practica);
-    const practica=await practicaRepository.findOne({where:{id_practica:id}});
-    if(!practica){
-        return null;
-    }
-//validaciones
-    //solo dejara actualizar ciertos campos si la practica esta en revision pendiente
-    if(practica.estado==='Revision_Pendiente'){
-        Object.assign(practica,{...datosActualizacion,fecha_actualizacion:new Date()});
+    async obtenerPracticasEstudiante(idEstudiante) {
+        const practicaRepository = getRepository(Practica);
+        return await practicaRepository.find({
+            where: { id_estudiante: idEstudiante },
+            relations: ["docente"]
+        });
+    },
+
+    async obtenerPracticaPorId(id) {
+        const practicaRepository = getRepository(Practica);
+        return await practicaRepository.findOne({
+            where: { id_practica: id },
+            relations: ["estudiante", "docente"]
+        });
+    },
+
+    async actualizarEstadoPractica(id, estado, observaciones) {
+        const practicaRepository = getRepository(Practica);
+        const practica = await practicaRepository.findOne({
+            where: { id_practica: id }
+        });
+
+        if (!practica) {
+            return null;
+        }
+
+        practica.estado = estado;
+        practica.observaciones = observaciones;
+        practica.fecha_actualizacion = new Date();
+
         return await practicaRepository.save(practica);
+    },
+
+    async actualizarPractica(id, datosActualizacion) {
+        const practicaRepository = getRepository(Practica);
+        const practica = await practicaRepository.findOne({
+            where: { id_practica: id }
+        });
+
+        if (!practica) {
+            return null;
+        }
+
+        // Solo permitir actualizar si la práctica está en revisión pendiente
+        if (practica.estado === "Revision_Pendiente") {
+            Object.assign(practica, {
+                ...datosActualizacion,
+                fecha_actualizacion: new Date()
+            });
+            return await practicaRepository.save(practica);
+        }
+        return null;
     }
-    return null;
-}
+};
 
-//funcion para validar requisitos minimos de practica
-export async function validarRequisitosPractica(datosPractica) {
-    //verificacion de empresa
-    if(!datosPractica.empresa){
-        throw new Error('La empresa debe estar asignada en la practica');
-    }    
-}
-
-//verificacion de supervisor
-if (!datosPractica.supervisor){
-    throw new Error('El supervisor debe estar asignado en la practica ');
-}
-
-//verificacion de periodo valido
-if(!datosPractica.fecha_inicio || !datosPractica.fecha_fin){
-    throw new Error('El periodo de la practica debe estar definido correctamente');
-}
-
-//verificacion de documentos
-if(!datosPractica.documentos || datosPractica.documentos.length===0){
-    throw new Error('Los documentos requeridos para la practica deben ser proporcionados');
-}
-return true;
+export default practicaService;

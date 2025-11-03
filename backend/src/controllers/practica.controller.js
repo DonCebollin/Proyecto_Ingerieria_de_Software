@@ -1,80 +1,90 @@
-const practicaService=require('../services/practica.service');
-const {success,error}=require('../handlers/responseHandlers');
+import practicaService from "../services/practica.service.js";
+import { handleErrorClient as error, handleSuccess as success } from "../handlers/responseHandlers.js";
 
-//crear solicitud de practica
-const practicaController={
-    crearPractica:async(req,res)=>{
-        try{
-            const datosPractica={
+const practicaController = {
+    // Crear solicitud de práctica
+    crearPractica: async (req, res) => {
+        try {
+            const datosPractica = {
                 ...req.body,
-                estudiante:req.user.id,
-                estado:'Revision_Pendiente'
+                id_estudiante: req.user.id,
+                estado: "Revision_Pendiente"
             };
-            const result=await practicaService.crearPractica(datosPractica);
-            return handleSuccess(res,201,'Solicitud de practica creada con exito',result);
-        }catch(err){
-            return error(res,500,'Error al obtener las practicas',err);
-        }
-},
-//obtener todas las practicas (encargado)
-obtenerTodasPracticas:async(req,res)=>{
-    try{
-        const practicas=await practicaService.obtenerTodasPracticas();
-        return handleSuccess(res,200,'Practicas conseguidas con exito',practicas);
-    }catch(err){
-        return error(res,500,'Error al conseguir las practicas',err);
-    }
-},
-
-//obtener practica de un estudiante
-obtenerPracticasEstudiante:async(req,res)=>{
-    try{
-        const practicas=await practicaService.obtenerPracticasEstudiante(req.user.id);
-        return handleSuccess(res,200,'Practicas del estudiantes conseguidas con exito',practicas);
-        }catch(error){
-            return error(res,500,'Error al obtener las practicas del estudiante',err);
+            const result = await practicaService.crearPractica(datosPractica);
+            return success(res, 201, "Solicitud de práctica creada con éxito", result);
+        } catch (err) {
+            return error(res, 500, "Error al crear la práctica: " + err.message, err);
         }
     },
 
-//Obtener una practica especifica por ID
-obtenerPracticaPorId:async(req,res)=>{
-    try{
-        const practica=await practicaService.obtenerPracticaPorId(req.params.id);
-        if(!practica){
-            return error(res,404,'Practica no encontrada/existente')
+    // Obtener todas las prácticas (encargado)
+    obtenerTodasPracticas: async (req, res) => {
+        try {
+            const practicas = await practicaService.obtenerTodasPracticas();
+            return success(res, 200, "Prácticas obtenidas con éxito", practicas);
+        } catch (err) {
+            return error(res, 500, "Error al obtener las prácticas", err);
         }
-        return success(res,200,'Practica recuperada con exito',practica);
-    }catch (err){
-        return error (res,500,'Error al obtener la practica solicitada',err);
-    }
-},
+    },
 
-//actualizar estado de la practica (encargado)
-actualizarEstadoPractica:async(req,res)=>{
-    try{
-        const {id}=req.params;
-        const {estado,observaciones}=req.body;
-        const practica=await practicaService.actualizarEstadoPractica(id,estado,observaciones);
-        if(!practica){
-            return error(res,404,'Practica no encontrada/existente');
+    // Obtener prácticas de un estudiante
+    obtenerPracticasEstudiante: async (req, res) => {
+        try {
+            const practicas = await practicaService.obtenerPracticasEstudiante(req.user.id);
+            return success(res, 200, "Prácticas del estudiante obtenidas con éxito", practicas);
+        } catch (err) {
+            return error(res, 500, "Error al obtener las prácticas del estudiante", err);
         }
-        return success(res,200,'Estado de la practica actualizado con exito',practica);
-    }catch(err){
-        return error(res,500,'Errorr al actualizar el estado de la practica',err);
-    }
-},
+    },
 
-//actualizar informacion de practica (estudiante)
-actualizarPractica:async(req,res)=>{
-    try{
-        const{id}=req.params;
-        const datosActualizacion=req.body;
-        const practica=await practicaService.actualizarPractica(id,datosActualizacion);
-    if(!practica){
-        return error(res,404,'Practica no econtrada/existente');
-    }return success(res,200,'Practica actualizada con exito',practica);
-    }catch(err){
-        return error(res,500,'Error al actualizar la practica',err);
+    // Obtener una práctica específica por ID
+    obtenerPracticaPorId: async (req, res) => {
+        try {
+            const practica = await practicaService.obtenerPracticaPorId(req.params.id);
+            if (!practica) {
+                return error(res, 404, "Práctica no encontrada");
+            }
+            return success(res, 200, "Práctica recuperada con éxito", practica);
+        } catch (err) {
+            return error(res, 500, "Error al obtener la práctica solicitada", err);
+        }
+    },
+
+    // Actualizar estado de la práctica (encargado)
+    actualizarEstadoPractica: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { estado, observaciones } = req.body;
+
+            if (!["Aprobada", "Rechazada", "En_Curso", "Finalizada"].includes(estado)) {
+                return error(res, 400, "Estado no válido");
+            }
+
+            const practica = await practicaService.actualizarEstadoPractica(id, estado, observaciones);
+            if (!practica) {
+                return error(res, 404, "Práctica no encontrada");
+            }
+            return success(res, 200, "Estado de la práctica actualizado con éxito", practica);
+        } catch (err) {
+            return error(res, 500, "Error al actualizar el estado de la práctica", err);
+        }
+    },
+
+    // Actualizar información de práctica (estudiante)
+    actualizarPractica: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const datosActualizacion = req.body;
+            
+            const practica = await practicaService.actualizarPractica(id, datosActualizacion);
+            if (!practica) {
+                return error(res, 404, "Práctica no encontrada o no se puede actualizar en su estado actual");
+            }
+            return success(res, 200, "Práctica actualizada con éxito", practica);
+        } catch (err) {
+            return error(res, 500, "Error al actualizar la práctica", err);
+        }
     }
-}
-}
+};
+
+export default practicaController;
