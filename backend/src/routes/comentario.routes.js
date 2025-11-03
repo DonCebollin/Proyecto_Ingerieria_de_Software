@@ -17,10 +17,10 @@ const router = Router();
 router
     .post("/", createComentario)
     .get("/", getComentarios)
+    .get("/todos", getAllComentarios)
+    .get("/usuario/:usuarioId", getComentariosByUsuarioId)
     .get("/:id", getComentarioById)
     .put("/:id", updateComentario)
     .delete("/:id", deleteComentario)
-    .get("/usuario/:usuarioId", getComentariosByUsuarioId)
-    .get("/todos", getAllComentarios);
-
+    
 export default router;

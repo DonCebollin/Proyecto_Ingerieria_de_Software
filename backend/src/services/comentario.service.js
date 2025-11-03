@@ -72,10 +72,10 @@ export async function getComentariosByUsuarioIdService(usuarioId) {
   }
 }
 
-export async function getallComentariosService(usuarioId) {
+export async function getallComentariosService() { // No necesita parámetros
   try {
     const comentarioRepository = AppDataSource.getRepository(Comentario);
-    const comentarios = await comentarioRepository.findManyBy({ usuarioId });
+    const comentarios = await comentarioRepository.find(); 
     return comentarios;
   } catch (error) {
     throw new Error("Error al obtener todos los comentarios");
