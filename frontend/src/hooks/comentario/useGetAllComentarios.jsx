@@ -1,0 +1,24 @@
+import { useState } from "react";
+import { getAllComentarios } from "../../services/comentarioService";
+
+export function useGetAllComentarios() {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [comentarios, setComentarios] = useState([]);
+
+    const handleGetAllComentarios = async () => {
+        setLoading(true);
+        setError(null); 
+        try {
+            const response = await getAllComentarios();
+            setComentarios(response.data);
+        }
+        catch (error) {
+            setError(error);    
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return { handleGetAllComentarios, loading, error, comentarios };
+}

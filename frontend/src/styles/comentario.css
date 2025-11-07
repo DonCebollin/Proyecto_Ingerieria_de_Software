@@ -1,0 +1,39 @@
+.main-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}
+
+.table-container {
+    width: 90%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.top-table {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.title-table {
+    color: #003366;
+    margin-left: 70px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    button {
+        background: rgba(255, 255, 255, 0.87);
+        border: #fff;
+        cursor: pointer;
+        box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+        
+    }
+}
+

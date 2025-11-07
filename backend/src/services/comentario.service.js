@@ -72,7 +72,7 @@ export async function getComentariosByUsuarioIdService(usuarioId) {
   }
 }
 
-export async function getallComentariosService() { // No necesita parámetros
+export async function getallComentariosService() {
   try {
     const comentarioRepository = AppDataSource.getRepository(Comentario);
     const comentarios = await comentarioRepository.find(); 

@@ -15,12 +15,12 @@ import {
 const router = Router();
 
 router
-    .post("/", createComentario)
-    .get("/", getComentarios)
-    .get("/todos", getAllComentarios)
-    .get("/usuario/:usuarioId", getComentariosByUsuarioId)
-    .get("/:id", getComentarioById)
-    .put("/:id", updateComentario)
-    .delete("/:id", deleteComentario)
+    .post("/", { isEstudiante, isDocente }, createComentario)
+    .get("/", { isEstudiante, isDocente }, getComentarios)
+    .get("/todos",  isDocente , getAllComentarios)
+    .get("/usuario/:usuarioId", isEstudiante , getComentariosByUsuarioId)
+    .get("/:id", { isEstudiante, isDocente }, getComentarioById)
+    .put("/:id", { isEstudiante, isDocente }, updateComentario)
+    .delete("/:id", isEstudiante, deleteComentario)
     
 export default router;
