@@ -5,7 +5,7 @@ import {
   deleteEvaluacionService,
   getEvaluacionByIdService,
   getEvaluacionesByDocenteService,
-  getEvaluacionesByPracticaService,
+  getEvaluacionesByDocumentoService,
   updateEvaluacionService,
 } from "../services/evaluacion.service.js";
 
@@ -22,13 +22,11 @@ import {
 
 export async function crearEvaluacion(req, res) {
   try {
-
     const id_usuario = req.user.id_usuario || req.user.id || req.user.userId;
     const rol_usuario = "docente";
 
-    if (!id_usuario) {
+    if (!id_usuario)
       return handleErrorClient(res, 400, "No se pudo obtener el ID del usuario autenticado");
-    }
 
     const { error } = evaluacionBodyValidation.validate(req.body);
     if (error) return handleErrorClient(res, 400, error.message);
@@ -39,8 +37,6 @@ export async function crearEvaluacion(req, res) {
       rol_usuario,
     };
 
-    console.log("Datos recibidos para guardar evaluación:", evaluacionData);
-
     const [evaluacion, errorEval] = await crearEvaluacionService(evaluacionData);
     if (errorEval) return handleErrorClient(res, 500, errorEval);
 
@@ -50,12 +46,11 @@ export async function crearEvaluacion(req, res) {
   }
 }
 
-
-export async function getEvaluacionesByPractica(req, res) {
+export async function getEvaluacionesByDocumento(req, res) {
   try {
-    const { id_practica } = req.params;
+    const { id_documento } = req.params;
 
-    const [evaluaciones, errorEval] = await getEvaluacionesByPracticaService(id_practica);
+    const [evaluaciones, errorEval] = await getEvaluacionesByDocumentoService(id_documento);
     if (errorEval && evaluaciones.length === 0)
       return handleErrorClient(res, 404, errorEval);
 

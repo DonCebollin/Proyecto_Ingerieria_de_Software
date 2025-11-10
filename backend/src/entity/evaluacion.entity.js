@@ -1,16 +1,16 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-const EvaluacionPracticaSchema = new EntitySchema({
-  name: "EvaluacionPractica",
-  tableName: "evaluaciones_practica",
+const EvaluacionSchema = new EntitySchema({
+  name: "Evaluacion",
+  tableName: "evaluaciones",
   columns: {
     id_evaluacion: {
       type: "int",
       primary: true,
       generated: true,
     },
-    id_practica: {
+    id_documento: {
       type: "int",
       nullable: false,
     },
@@ -20,14 +20,13 @@ const EvaluacionPracticaSchema = new EntitySchema({
     },
     rol_usuario: {
       type: "enum",
-      enum: ["estudiante", "docente"],
+      enum: ["docente", "estudiante"],
       nullable: false,
     },
     nota: {
       type: "float",
       nullable: true,
     },
-
     comentario: {
       type: "text",
       nullable: true,
@@ -39,10 +38,10 @@ const EvaluacionPracticaSchema = new EntitySchema({
     },
   },
   relations: {
-    practica: {
-      target: "Practica",
+    documento: {
+      target: "Documento",
       type: "many-to-one",
-      joinColumn: { name: "id_practica" },
+      joinColumn: { name: "id_documento" },
       onDelete: "CASCADE",
     },
     usuario: {
@@ -54,4 +53,4 @@ const EvaluacionPracticaSchema = new EntitySchema({
   },
 });
 
-export default EvaluacionPracticaSchema;
+export default EvaluacionSchema;

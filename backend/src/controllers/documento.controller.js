@@ -1,8 +1,5 @@
 "use strict";
-
-import fs from "fs";
 import {
-  deleteDocumentoService,
   getDocumentoByIdService,
   getDocumentosService,
   registrarDocumentoService,
@@ -14,67 +11,65 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 import {
-  documentoBodyValidation,
   documentoEstadoValidation,
 } from "../validations/documento.validation.js";
 
-export async function subirArchivo(req, res) {
+export async function subirYRegistrarDocumento(req, res) {
   try {
     if (req.fileValidationError) {
       return handleErrorClient(res, 400, req.fileValidationError);
     }
+    const files = [
+      ...(req.files?.informe || []),
+      ...(req.files?.autoevaluacion || []),
+    ];
 
-    if (!req.file) {
-      return handleErrorClient(res, 400, "No se ha subido ningún archivo");
+    if (files.length === 0) {
+      return handleErrorClient(res, 400, "No se ha subido ningún archivo válido");
     }
 
-    const { filename, path: filePath, size, mimetype } = req.file;
+    const { id_practica } = req.body;
+    if (!id_practica) {
+      return handleErrorClient(res, 400, "El campo id_practica es obligatorio");
+    }
 
-    const archivoData = {
-      nombre_archivo: filename,
-      ruta_archivo: filePath,
-      formato: mimetype.includes("pdf") ? "pdf" : "docx",
-      peso_mb: parseFloat((size / (1024 * 1024)).toFixed(2)),
-    };
+    const extraUrls = {};
 
-    handleSuccess(res, 201, "Archivo subido correctamente", archivoData);
+    const documentosRegistrados = [];
+
+    for (const file of files) {
+      const { filename, size, mimetype } = file;
+      const publicUrl = `${req.protocol}://${req.get("host")}/uploads/documentos/${filename}`;
+      const formato = mimetype.includes("pdf") ? "pdf" : "docx";
+      const peso_mb = parseFloat((size / (1024 * 1024)).toFixed(2));
+
+      const data = {
+        id_practica,
+        nombre_archivo: filename,
+        ruta_archivo: publicUrl,
+        formato,
+        peso_mb,
+        ...extraUrls,
+      };
+
+      const [documento, errorDoc] = await registrarDocumentoService(data);
+      if (errorDoc) {
+        console.warn(`No se pudo registrar el documento ${filename}:`, errorDoc);
+        continue;
+      }
+
+      documentosRegistrados.push(documento);
+    }
+
+    if (documentosRegistrados.length === 0) {
+      return handleErrorClient(res, 400, "Ningún documento fue registrado correctamente");
+    }
+
+    handleSuccess(res, 201, "Archivo subido correctamente", documentosRegistrados);
   } catch (error) {
     if (error.code === "LIMIT_FILE_SIZE") {
       return handleErrorClient(res, 400, "El archivo excede los 10 MB permitidos");
     }
-
-    console.error("Error al subir archivo:", error);
-    handleErrorServer(res, 500, error.message);
-  }
-}
-
-export async function registrarDocumento(req, res) {
-  try {
-    const { id_practica, nombre_archivo, ruta_archivo, formato, peso_mb } = req.body;
-
-    const { error } = documentoBodyValidation.validate({
-      id_practica,
-      nombre_archivo,
-      ruta_archivo,
-      formato,
-      peso_mb,
-    });
-
-    if (error) return handleErrorClient(res, 400, error.message);
-
-    const [documento, errorDoc] = await registrarDocumentoService({
-      id_practica,
-      nombre_archivo,
-      ruta_archivo,
-      formato,
-      peso_mb,
-    });
-
-    if (errorDoc) return handleErrorClient(res, 400, errorDoc);
-
-    handleSuccess(res, 201, "Documento registrado correctamente", documento);
-  } catch (error) {
-    console.error("Error al registrar documento:", error);
     handleErrorServer(res, 500, error.message);
   }
 }
@@ -94,7 +89,6 @@ export async function getDocumentos(req, res) {
   }
 }
 
-// 🔍 Obtener un documento por su ID
 export async function getDocumentoById(req, res) {
   try {
     const { id } = req.params;
@@ -102,22 +96,6 @@ export async function getDocumentoById(req, res) {
 
     if (errorDoc) return handleErrorClient(res, 404, errorDoc);
     handleSuccess(res, 200, "Documento encontrado", documento);
-  } catch (error) {
-    handleErrorServer(res, 500, error.message);
-  }
-}
-
-export async function deleteDocumento(req, res) {
-  try {
-    const { id } = req.params;
-    const [documento, errorDoc] = await deleteDocumentoService(id);
-    if (errorDoc) return handleErrorClient(res, 404, errorDoc);
-
-    if (fs.existsSync(documento.ruta_archivo)) {
-      fs.unlinkSync(documento.ruta_archivo);
-    }
-
-    handleSuccess(res, 200, "Documento eliminado correctamente", documento);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }

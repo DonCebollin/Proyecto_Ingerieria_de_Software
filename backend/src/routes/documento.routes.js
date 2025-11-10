@@ -1,31 +1,40 @@
 "use strict";
 
-import { Router } from "express";
-import upload from "../middlewares/uploadfile.middleware.js";
+import express, { Router } from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import { uploadFields } from "../middlewares/uploadfile.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isDocente, isEstudiante } from "../middlewares/authorization.middleware.js";
 import {
-  deleteDocumento,
   getDocumentoById,
   getDocumentos,
-  registrarDocumento,
-  subirArchivo,
+  subirYRegistrarDocumento,
   updateEstadoDocumento,
 } from "../controllers/documento.controller.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsPath = path.resolve(__dirname, "../../../uploads");
+
+const isDocenteOrEstudiante = async (req, res, next) => {
+    await isDocente(req, res, (err) => {
+        if (!err) return next();
+        isEstudiante(req, res, next);
+    });
+};
 
 const router = Router();
 
 router.use(authenticateJwt);
 
-router.post("/subir/archivo", isEstudiante, upload.single("file"), subirArchivo);
+router.use("/uploads", express.static(uploadsPath));
 
-router.post("/registrar", isEstudiante, registrarDocumento);
-
-router.delete("/:id", isEstudiante, deleteDocumento);
+router.post("/subir", uploadFields, isEstudiante, subirYRegistrarDocumento);
 
 router.patch("/:id/estado", isDocente, updateEstadoDocumento);
 
-router.get("/", getDocumentos);
-router.get("/:id", getDocumentoById);
+router.get("/", isDocenteOrEstudiante, getDocumentos);
+router.get("/:id", isDocenteOrEstudiante, getDocumentoById);
 
 export default router;

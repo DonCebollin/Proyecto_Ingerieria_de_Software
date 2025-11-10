@@ -25,19 +25,19 @@ export const documentoBodyValidation = Joi.object({
     "number.max": "El archivo no puede exceder los 10 MB",
   }),
   estado_revision: Joi.string()
-    .valid("pendiente", "aprobado", "rechazado")
+    .valid("pendiente", "revisado")
     .default("pendiente")
     .messages({
-      "any.only": "El estado de revisión debe ser 'pendiente', 'aprobado' o 'rechazado'",
+      "any.only": "El estado de revisión debe ser 'pendiente', 'revisado'",
     }),
 });
 
 export const documentoEstadoValidation = Joi.object({
   estado_revision: Joi.string()
-    .valid("pendiente", "aprobado", "rechazado")
+    .valid("pendiente", "revisado")
     .required()
     .messages({
       "any.required": "Debe indicar el nuevo estado del documento",
-      "any.only": "El estado de revisión debe ser 'pendiente', 'aprobado' o 'rechazado'",
+      "any.only": "El estado de revisión debe ser 'pendiente', 'revisado'",
     }),
 });

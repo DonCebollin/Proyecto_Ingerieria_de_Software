@@ -8,32 +8,34 @@ export async function registrarDocumentoService(data) {
   try {
     const practicaRepository = AppDataSource.getRepository(Practica);
     const documentoRepository = AppDataSource.getRepository(Documento);
-
     const practica = await practicaRepository.findOne({
       where: { id_practica: data.id_practica },
     });
-
     if (!practica) {
       return [null, "La práctica asociada no existe"];
     }
-
     if (practica.estado !== "finalizada") {
       return [null, "Solo se pueden registrar documentos cuando la práctica está finalizada"];
     }
-
     const nombre = data.nombre_archivo.toLowerCase();
-    if (!nombre.includes("informe") && !nombre.includes("autoevaluacion")) {
-      return [null, "Solo se aceptan el informe final o la autoevaluación al finalizar la práctica"];
+    const tipoDocumento = nombre.includes("informe")
+      ? "informe"
+      : nombre.includes("autoevaluacion")
+        ? "autoevaluacion"
+        : null;
+    if (!tipoDocumento) {
+      return [
+        null, "Solo se aceptan archivos de tipo 'informe' o 'autoevaluación' al finalizar la práctica",
+      ];
     }
-
     const documentoData = {
       ...data,
+      tipo: tipoDocumento,
       estado_revision: "pendiente",
+      fecha_subida: new Date(),
     };
-
     const nuevoDocumento = documentoRepository.create(documentoData);
     await documentoRepository.save(nuevoDocumento);
-
     return [nuevoDocumento, null];
   } catch (error) {
     console.error("Error al registrar documento:", error);
@@ -63,22 +65,6 @@ export async function getDocumentoByIdService(id_documento) {
   } catch (error) {
     console.error("Error al obtener documento:", error);
     return [null, "Error al consultar el documento"];
-  }
-}
-
-export async function deleteDocumentoService(id_documento) {
-  try {
-    const documentoRepository = AppDataSource.getRepository(Documento);
-    const documento = await documentoRepository.findOne({
-      where: { id_documento },
-    });
-    if (!documento) return [null, "Documento no encontrado"];
-
-    await documentoRepository.remove(documento);
-    return [documento, null];
-  } catch (error) {
-    console.error("Error al eliminar documento:", error);
-    return [null, "Error al eliminar el documento"];
   }
 }
 

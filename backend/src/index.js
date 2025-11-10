@@ -6,6 +6,7 @@ import indexRoutes from "./routes/index.routes.js";
 import session from "express-session";
 import passport from "passport";
 import express, { json, urlencoded } from "express";
+import path from "path"; // ✅ Necesario para construir la ruta absoluta
 import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { createUsers } from "./config/initialSetup.js";
@@ -21,25 +22,27 @@ async function setupServer() {
       cors({
         credentials: true,
         origin: true,
-      }),
+      })
     );
 
     app.use(
       urlencoded({
         extended: true,
         limit: "1mb",
-      }),
+      })
     );
 
     app.use(
       json({
         limit: "1mb",
-      }),
+      })
     );
 
     app.use(cookieParser());
-
     app.use(morgan("dev"));
+
+    const uploadsPath = path.join(process.cwd(), "uploads");
+    app.use("/uploads", express.static(uploadsPath));
 
     app.use(
       session({
@@ -51,7 +54,7 @@ async function setupServer() {
           httpOnly: true,
           sameSite: "strict",
         },
-      }),
+      })
     );
 
     app.use(passport.initialize());
@@ -62,7 +65,7 @@ async function setupServer() {
     app.use("/api", indexRoutes);
 
     app.listen(PORT, () => {
-      console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
+      console.log(`Servidor corriendo en ${HOST}:${PORT}/api`);
     });
   } catch (error) {
     console.log("Error en index.js -> setupServer(), el error es: ", error);
@@ -80,7 +83,7 @@ async function setupAPI() {
 }
 
 setupAPI()
-  .then(() => console.log("=> API Iniciada exitosamente"))
+  .then(() => console.log("API iniciada exitosamente"))
   .catch((error) =>
-    console.log("Error en index.js -> setupAPI(), el error es: ", error),
+    console.log("Error en index.js -> setupAPI(), el error es: ", error)
   );

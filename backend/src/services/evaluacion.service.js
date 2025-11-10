@@ -1,17 +1,19 @@
 "use strict";
 
-import EvaluacionPractica from "../entity/evaluacion.entity.js";
+import Evaluacion from "../entity/evaluacion.entity.js";
 import { AppDataSource } from "../config/configDb.js";
 
 export async function crearEvaluacionService(data) {
   try {
-    const repo = AppDataSource.getRepository("EvaluacionPractica");
+    const repo = AppDataSource.getRepository(Evaluacion);
+
     const evaluacionExistente = await repo.findOne({
       where: {
-        id_practica: data.id_practica,
+        id_documento: data.id_documento,
         id_usuario: data.id_usuario,
       },
     });
+
     if (evaluacionExistente) {
       Object.assign(evaluacionExistente, {
         nota: data.nota,
@@ -24,7 +26,6 @@ export async function crearEvaluacionService(data) {
 
     const nuevaEvaluacion = repo.create(data);
     await repo.save(nuevaEvaluacion);
-
     return [nuevaEvaluacion, null];
   } catch (error) {
     console.error("Error al registrar evaluación:", error);
@@ -32,14 +33,14 @@ export async function crearEvaluacionService(data) {
   }
 }
 
-export async function getEvaluacionesByPracticaService(id_practica) {
+export async function getEvaluacionesByDocumentoService(id_documento) {
   try {
-    const evaluacionRepository = AppDataSource.getRepository(EvaluacionPractica);
-    const evaluaciones = await evaluacionRepository.find({
-      where: { id_practica },
+    const repo = AppDataSource.getRepository(Evaluacion);
+    const evaluaciones = await repo.find({
+      where: { id_documento },
     });
     if (!evaluaciones || evaluaciones.length === 0)
-      return [[], "No hay evaluaciones registradas para esta práctica"];
+      return [[], "No hay evaluaciones registradas para este documento"];
     return [evaluaciones, null];
   } catch (error) {
     console.error("Error al obtener evaluaciones:", error);
@@ -49,8 +50,8 @@ export async function getEvaluacionesByPracticaService(id_practica) {
 
 export async function getEvaluacionByIdService(id_evaluacion) {
   try {
-    const evaluacionRepository = AppDataSource.getRepository(EvaluacionPractica);
-    const evaluacion = await evaluacionRepository.findOne({
+    const repo = AppDataSource.getRepository(Evaluacion);
+    const evaluacion = await repo.findOne({
       where: { id_evaluacion },
     });
     if (!evaluacion) return [null, "Evaluación no encontrada"];
@@ -63,14 +64,12 @@ export async function getEvaluacionByIdService(id_evaluacion) {
 
 export async function updateEvaluacionService(id_evaluacion, data) {
   try {
-    const evaluacionRepository = AppDataSource.getRepository(EvaluacionPractica);
-    const evaluacion = await evaluacionRepository.findOne({
-      where: { id_evaluacion },
-    });
+    const repo = AppDataSource.getRepository(Evaluacion);
+    const evaluacion = await repo.findOne({ where: { id_evaluacion } });
     if (!evaluacion) return [null, "Evaluación no encontrada"];
-    Object.assign(evaluacion, data);
-    await evaluacionRepository.save(evaluacion);
 
+    Object.assign(evaluacion, data, { fecha_registro: new Date() });
+    await repo.save(evaluacion);
     return [evaluacion, null];
   } catch (error) {
     console.error("Error al actualizar evaluación:", error);
@@ -80,12 +79,11 @@ export async function updateEvaluacionService(id_evaluacion, data) {
 
 export async function deleteEvaluacionService(id_evaluacion) {
   try {
-    const evaluacionRepository = AppDataSource.getRepository(EvaluacionPractica);
-    const evaluacion = await evaluacionRepository.findOne({
-      where: { id_evaluacion },
-    });
+    const repo = AppDataSource.getRepository(Evaluacion);
+    const evaluacion = await repo.findOne({ where: { id_evaluacion } });
     if (!evaluacion) return [null, "Evaluación no encontrada"];
-    await evaluacionRepository.remove(evaluacion);
+
+    await repo.remove(evaluacion);
     return [evaluacion, null];
   } catch (error) {
     console.error("Error al eliminar evaluación:", error);
@@ -95,10 +93,10 @@ export async function deleteEvaluacionService(id_evaluacion) {
 
 export async function getEvaluacionesByDocenteService(id_usuario) {
   try {
-    const repo = AppDataSource.getRepository("EvaluacionPractica");
+    const repo = AppDataSource.getRepository(Evaluacion);
     const evaluaciones = await repo.find({
       where: { id_usuario },
-      relations: ["practica"],
+      relations: ["documento"],
       order: { fecha_registro: "DESC" },
     });
 
@@ -107,6 +105,7 @@ export async function getEvaluacionesByDocenteService(id_usuario) {
 
     return [evaluaciones, null];
   } catch (error) {
+    console.error("Error al obtener evaluaciones del docente:", error);
     return [null, error.message];
   }
 }
