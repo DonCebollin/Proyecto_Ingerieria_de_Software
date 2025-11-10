@@ -1,5 +1,5 @@
-"use strict";  
-import Comentario from "../entity/comentario.entity.js";    
+"use strict";
+import Comentario from "../entity/comentario.entity.js";
 import { AppDataSource } from "../config/configDb.js";
 
 export async function createComentarioService(body) {
@@ -20,13 +20,13 @@ export async function getComentariosService() {
     return comentarios;
   } catch (error) {
     throw new Error("Error al obtener los comentarios");
-  } 
+  }
 }
 
 export async function getComentarioByIdService(id) {
   try {
     const comentarioRepository = AppDataSource.getRepository(Comentario);
-    const comentario = await comentarioRepository.findOneBy({ id });    
+    const comentario = await comentarioRepository.findOneBy({ id });
     return comentario;
   } catch (error) {
     throw new Error("Error al obtener el comentario por ID");
@@ -75,7 +75,7 @@ export async function getComentariosByUsuarioIdService(usuarioId) {
 export async function getallComentariosService() {
   try {
     const comentarioRepository = AppDataSource.getRepository(Comentario);
-    const comentarios = await comentarioRepository.find(); 
+    const comentarios = await comentarioRepository.find();
     return comentarios;
   } catch (error) {
     throw new Error("Error al obtener todos los comentarios");

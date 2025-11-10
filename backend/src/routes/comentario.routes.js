@@ -1,26 +1,27 @@
 "use strict";
 import { Router } from "express";
+import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdmin, isDocente, isDocenteOrEstudiante, isEstudiante } from "../middlewares/authorization.middleware.js";
 
 import {
-    createComentario,
-    deleteComentario,
-    getAllComentarios,
-    getComentarioById,
-    getComentarios,
-    getComentariosByUsuarioId,
-    updateComentario,
+  createComentario,
+  deleteComentario,
+  getAllComentarios,
+  getComentarioById,
+  getComentarios,
+  getComentariosByUsuarioId,
+  updateComentario,
 } from "../controllers/comentario.controller.js";
 
 const router = Router();
 
 router
-    .post("/", createComentario)
-    .get("/", getComentarios)
-    .get("/todos", getAllComentarios)
-    .get("/usuario/:usuarioId",  getComentariosByUsuarioId)
-    .get("/:id",  getComentarioById)
-    .put("/:id",  updateComentario)
-    .delete("/:id",  deleteComentario);
-    
+  .post("/", authenticateJwt, isDocenteOrEstudiante, createComentario)
+  .get("/", authenticateJwt, isDocenteOrEstudiante, getComentarios)
+  .get("/todos", authenticateJwt, isDocenteOrEstudiante, getAllComentarios)
+  .get("/usuario/:usuarioId", authenticateJwt, isDocenteOrEstudiante, getComentariosByUsuarioId)
+  .get("/:id", authenticateJwt, isDocenteOrEstudiante, getComentarioById)
+  .put("/:id", authenticateJwt, isDocenteOrEstudiante, updateComentario)
+  .delete("/:id", authenticateJwt, isDocenteOrEstudiante, deleteComentario);
+
 export default router;
