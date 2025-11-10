@@ -1,23 +1,34 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
 
-const documentoRepository = AppDataSource.getRepository("Documento");
+const documentoRepository = AppDataSource.getRepository("BitacorasDocumento");
 const practicaRepository = AppDataSource.getRepository("Practica");
+
+// Constantes para reutilizar
+const FORMATOS_PERMITIDOS = ['pdf', 'docx', 'zip', 'rar'];
+const ESTADOS_REVISION = ['pendiente', 'aprobado', 'rechazado'];
+const CAMPOS_REQUERIDOS = ['id_practica', 'nombre_archivo', 'ruta_archivo', 'formato', 'peso_mb'];
+
+// Función auxiliar para determinar tipo de documento
+function determinarTipoDocumento(nombreArchivo) {
+    const nombreLower = nombreArchivo.toLowerCase();
+    if (nombreLower.includes("informe")) return "informe";
+    if (nombreLower.includes("autoevaluacion")) return "autoevaluacion";
+    return "otro";
+}
 
 export async function registrarDocumento(data) {
     try {
         // Validar que todos los campos requeridos estén presentes
-        const camposRequeridos = ['id_practica', 'nombre_archivo', 'ruta_archivo', 'formato', 'peso_mb'];
-        const camposFaltantes = camposRequeridos.filter(campo => !data[campo]);
+        const camposFaltantes = CAMPOS_REQUERIDOS.filter(campo => !data[campo]);
         
         if (camposFaltantes.length > 0) {
             return [null, `Faltan campos requeridos: ${camposFaltantes.join(', ')}`];
         }
 
         // Validar el formato del documento
-        const formatosPermitidos = ['pdf', 'docx', 'zip', 'rar'];
-        if (!formatosPermitidos.includes(data.formato.toLowerCase())) {
-            return [null, `Formato no permitido. Los formatos permitidos son: ${formatosPermitidos.join(', ')}`];
+        if (!FORMATOS_PERMITIDOS.includes(data.formato.toLowerCase())) {
+            return [null, `Formato no permitido. Los formatos permitidos son: ${FORMATOS_PERMITIDOS.join(', ')}`];
         }
 
         // Verificar si existe la práctica
@@ -35,19 +46,21 @@ export async function registrarDocumento(data) {
         }
 
         // Verificar si ya existe un documento del mismo tipo
-        const nombreLower = data.nombre_archivo.toLowerCase();
-        const tipoDocumento = nombreLower.includes("informe") ? "informe" : "autoevaluacion";
+        const tipoDocumento = determinarTipoDocumento(data.nombre_archivo);
         
-        const documentoExistente = await documentoRepository.findOne({
-            where: {
-                id_practica: data.id_practica,
-                nombre_archivo: documentoRepository.query("LOWER(nombre_archivo) LIKE :tipo", {
-                    tipo: `%${tipoDocumento}%`
-                })
-            }
+        if (tipoDocumento === "otro") {
+            return [null, "Solo se aceptan archivos de tipo 'informe' o 'autoevaluacion'"];
+        }
+
+        const documentosExistentes = await documentoRepository.find({
+            where: { id_practica: Number(data.id_practica) }
         });
 
-        if (documentoExistente) {
+        const documentoDelMismoTipo = documentosExistentes.find(doc => 
+            determinarTipoDocumento(doc.nombre_archivo) === tipoDocumento
+        );
+
+        if (documentoDelMismoTipo) {
             return [null, `Ya existe un documento de tipo ${tipoDocumento} para esta práctica`];
         }
 
@@ -58,26 +71,22 @@ export async function registrarDocumento(data) {
             fecha_subida: new Date()
         };
 
-        try {
-            const nuevoDocumento = documentoRepository.create(documentoData);
-            const documentoGuardado = await documentoRepository.save(nuevoDocumento);
-            return [documentoGuardado, null];
-        } catch (dbError) {
-            console.error("Error específico de base de datos:", dbError);
-            
-            if (dbError.code === '23505') {  // Error de duplicación
-                return [null, "Ya existe un documento con el mismo nombre"];
-            } else if (dbError.code === '23503') {  // Error de clave foránea
-                return [null, "La práctica asociada no es válida"];
-            } else if (dbError.code === '23502') {  // Error de no nulo
-                return [null, "Falta un campo requerido en la base de datos"];
-            }
-            
-            throw dbError; // Re-lanzar el error si no es uno de los casos manejados
-        }
-    } catch (error) {
-        console.error("Error al registrar documento:", error);
-        return [null, `Error al guardar el documento: ${error.message}`];
+        const nuevoDocumento = documentoRepository.create(documentoData);
+        const documentoGuardado = await documentoRepository.save(nuevoDocumento);
+        return [documentoGuardado, null];
+
+    } catch (dbError) {
+        console.error("Error específico de base de datos:", dbError);
+        
+        // Manejo específico de errores de base de datos
+        const errorMessages = {
+            '23505': "Ya existe un documento con el mismo nombre",
+            '23503': "La práctica asociada no es válida", 
+            '23502': "Falta un campo requerido en la base de datos"
+        };
+
+        const mensaje = errorMessages[dbError.code] || `Error al guardar el documento: ${dbError.message}`;
+        return [null, mensaje];
     }
 }
 
@@ -88,17 +97,24 @@ export async function obtenerDocumentosPorPractica(id_practica) {
             order: { fecha_subida: "DESC" }
         });
     } catch (error) {
+        console.error("Error al obtener documentos:", error);
         throw new Error("Error al obtener documentos de la práctica");
     }
 }
 
 export async function actualizarEstadoDocumento(id_documento, estado_revision) {
     try {
+        // Validar estado de revisión
+        if (!ESTADOS_REVISION.includes(estado_revision)) {
+            throw new Error(`Estado de revisión inválido. Estados permitidos: ${ESTADOS_REVISION.join(', ')}`);
+        }
+
         await documentoRepository.update(id_documento, { estado_revision });
         return await documentoRepository.findOne({
             where: { id_documento: parseInt(id_documento) }
         });
     } catch (error) {
-        throw new Error("Error al actualizar el estado del documento");
+        console.error("Error al actualizar estado del documento:", error);
+        throw new Error(`Error al actualizar el estado del documento: ${error.message}`);
     }
 }

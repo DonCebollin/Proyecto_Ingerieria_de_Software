@@ -3,7 +3,7 @@ import { Router } from "express";
 import { registrarBitacora, obtenerBitacora, obtenerBitacorasPorPractica, obtenerUltimaSemana } from "../controllers/Bitacoras.controller.js";
 import { verificarToken } from "../middlewares/authentication.middleware.js";
 import { verificarRol } from "../middlewares/authorization.middleware.js";
-import uploadRar from "../middlewares/uploadfilerar.middleware.js";
+import { uploadBitacora } from "../middlewares/upload.middleware.js";
 import { validarRegistroBitacora } from "../validations/bitacora.validation.js";
 
 const router = Router();
@@ -15,7 +15,7 @@ router
     // Ruta para registrar una nueva bitácora (solo estudiantes)
     .post("/registrar", 
         verificarRol(["estudiante"]),
-        uploadRar,
+        uploadBitacora.any(),
         validarRegistroBitacora,
         registrarBitacora)
     

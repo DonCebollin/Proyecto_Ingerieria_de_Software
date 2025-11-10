@@ -9,7 +9,8 @@ export async function registrarBitacora(req, res) {
             semana, 
             descripcion_actividades, 
             resultados_aprendizajes,
-            horas_trabajadas 
+            horas_trabajadas,
+            id_documento
         } = req.body;
         
         // Validar archivo si se proporcionó
@@ -30,25 +31,19 @@ export async function registrarBitacora(req, res) {
             return handleErrorClient(res, 400, "No existe una práctica activa para registrar la bitácora");
         }
 
-        // Validar la semana actual
-        const fechaActual = new Date();
-        const inicioAno = new Date(fechaActual.getFullYear(), 0, 1);
-        const semanaActual = Math.ceil(((fechaActual - inicioAno) / 86400000 + inicioAno.getDay() + 1) / 7);
-        
-        if (semanaActual - semana > 1) {
-            return handleErrorClient(res, 400, `La semana ${semana} ya no está disponible para registro. Semana actual: ${semanaActual}`);
-        }
-        if (semana > semanaActual) {
-            return handleErrorClient(res, 400, "No se puede registrar bitácoras de semanas futuras");
+        // Validar la semana (permitir registro más flexible)
+        if (semana < 1 || semana > 20) {
+            return handleErrorClient(res, 400, "La semana debe estar entre 1 y 20");
         }
 
-        // Validar secuencia de semanas
+        // Validar secuencia de semanas (más flexible)
         const ultimaSemana = await bitacoraService.obtenerUltimaSemana(id_practica);
         if (semana <= ultimaSemana) {
             return handleErrorClient(res, 400, "Ya existe una bitácora para esta semana");
         }
-        if (semana > ultimaSemana + 1) {
-            return handleErrorClient(res, 400, "Debe registrar las bitácoras en orden secuencial");
+        // Permitir saltos en las semanas si es necesario (máximo 5 semanas de diferencia)
+        if (semana > ultimaSemana + 5) {
+            return handleErrorClient(res, 400, "No puedes registrar bitácoras con más de 5 semanas de diferencia");
         }
 
         // Validar y convertir horas trabajadas
@@ -80,17 +75,34 @@ export async function registrarBitacora(req, res) {
             fecha_registro: new Date()
         };
 
-        // Agregar información del archivo si se proporcionó
-        if (archivo) {
-            datosBitacora = {
-                ...datosBitacora,
-                nombre_archivo: archivo.filename,
-                ruta_archivo: archivo.path,
-                formato_archivo: archivo.mimetype.includes("pdf") ? "pdf" : 
-                               archivo.mimetype.includes("rar") ? "rar" : "docx",
-                peso_archivo_mb: parseFloat((archivo.size / (1024 * 1024)).toFixed(2))
-            };
+        // Si se proporciona un ID de documento, obtener la información del archivo
+        if (id_documento) {
+            try {
+                const { AppDataSource } = await import("../config/configDb.js");
+                const documentoRepository = AppDataSource.getRepository("BitacorasDocumento");
+                
+                const documento = await documentoRepository.findOne({
+                    where: { id_documento: parseInt(id_documento) }
+                });
+
+                if (documento) {
+                    datosBitacora = {
+                        ...datosBitacora,
+                        nombre_archivo: documento.nombre_archivo,
+                        ruta_archivo: documento.ruta_archivo,
+                        formato_archivo: documento.formato,
+                        peso_archivo_mb: documento.peso_mb
+                    };
+                } else {
+                    return handleErrorClient(res, 400, "El documento especificado no existe");
+                }
+            } catch (docError) {
+                console.error("Error al obtener documento:", docError);
+                return handleErrorClient(res, 400, "Error al obtener la información del documento");
+            }
         }
+
+
 
         // Registrar la bitácora
         const nuevaBitacora = await bitacoraService.crearBitacora(datosBitacora);

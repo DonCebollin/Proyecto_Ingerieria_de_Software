@@ -8,7 +8,7 @@ import {
 } from "../controllers/bitacoradocumento.controller.js";
 import { verificarToken } from "../middlewares/authentication.middleware.js";
 import { verificarRol } from "../middlewares/authorization.middleware.js";
-import uploadDoc from "../middlewares/uploaddoc.middleware.js";
+import { uploadDocument } from "../middlewares/upload.middleware.js";
 
 const router = Router();
 
@@ -19,7 +19,7 @@ router
     // Subir archivo (estudiantes)
     .post("/subir",
         verificarRol(["estudiante"]),
-        uploadDoc.single('archivo'),
+        uploadDocument.any(),
         subirArchivo)
 
     // Registrar documento en base de datos (estudiantes)

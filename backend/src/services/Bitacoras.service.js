@@ -4,31 +4,23 @@ import { AppDataSource } from "../config/configDb.js";
 const bitacoraRepository = AppDataSource.getRepository("Bitacora");
 const practicaRepository = AppDataSource.getRepository("Practica");
 
-export async function crearBitacora(datoBitacora) {
-    // Verificar si existe una práctica activa
+export async function verificarPracticaActiva(id_practica) {
     const practica = await practicaRepository.findOne({
-        where: { id_practica: datoBitacora.id_practica, estado: "activa" }
+        where: { id_practica: id_practica }
     });
 
-    if (!practica) {
-        throw new Error("No existe una práctica activa para registrar la bitácora");
+    return practica && (practica.estado === "en_progreso" || practica.estado === "activa");
+}
+
+export async function crearBitacora(datoBitacora) {
+    try {
+        // Crear la nueva bitácora
+        const nuevaBitacora = bitacoraRepository.create(datoBitacora);
+        return await bitacoraRepository.save(nuevaBitacora);
+    } catch (error) {
+        console.error("Error en el servicio al crear bitácora:", error);
+        throw new Error("Error al guardar la bitácora en la base de datos");
     }
-
-    // Verificar si ya existe una bitácora para esta semana y práctica
-    const bitacoraExistente = await bitacoraRepository.findOne({
-        where: {
-            id_practica: datoBitacora.id_practica,
-            semana: datoBitacora.semana
-        }
-    });
-
-    if (bitacoraExistente) {
-        throw new Error("Ya existe una bitácora registrada para esta semana");
-    }
-
-    // Crear la nueva bitácora
-    const nuevaBitacora = bitacoraRepository.create(datoBitacora);
-    return await bitacoraRepository.save(nuevaBitacora);
 }
 
 export async function obtenerBitacora(id_bitacora) {

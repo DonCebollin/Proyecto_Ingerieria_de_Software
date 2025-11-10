@@ -2,8 +2,8 @@
 import { EntitySchema } from "typeorm";
 
 const DocumentoSchema = new EntitySchema({
-    name: "Documento",
-    tableName: "documentos",
+    name: "BitacorasDocumento",
+    tableName: "bitacorasDocumentos",
     columns: {
         id_documento: {
             primary: true,
@@ -54,3 +54,5 @@ const DocumentoSchema = new EntitySchema({
         }
     }
 });
+
+export default DocumentoSchema;

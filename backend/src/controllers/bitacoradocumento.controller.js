@@ -9,11 +9,14 @@ export async function subirArchivo(req, res) {
             return handleErrorClient(res, 400, req.fileValidationError);
         }
 
-        if (!req.file) {
+        // Obtener el archivo (puede venir con cualquier nombre de campo)
+        const file = req.files && req.files.length > 0 ? req.files[0] : req.file;
+
+        if (!file) {
             return handleErrorClient(res, 400, "No se ha subido ningún archivo");
         }
 
-        const { filename, path: filePath, size, mimetype } = req.file;
+        const { filename, path: filePath, size, mimetype } = file;
 
         // Determinar el formato del archivo
         let formato;
@@ -56,31 +59,13 @@ export async function registrarDocumento(req, res) {
     try {
         const { id_practica, nombre_archivo, ruta_archivo, formato, peso_mb } = req.body;
 
-        // Validar campos requeridos
-        if (!id_practica || !nombre_archivo || !ruta_archivo || !formato || !peso_mb) {
-            return handleErrorClient(res, 400, "Todos los campos son requeridos");
-        }
-
-        // Validar formato de archivo
-        if (!["pdf", "docx", "zip", "rar"].includes(formato)) {
-            return handleErrorClient(res, 400, "Formato de archivo inválido. Solo se permiten PDF, DOCX, ZIP o RAR");
-        }
-
-        // Validar el nombre del archivo para tipo de documento
-        const nombreLower = nombre_archivo.toLowerCase();
-        if (!nombreLower.includes("informe") && !nombreLower.includes("autoevaluacion")) {
-            return handleErrorClient(res, 400, "Solo se aceptan el informe final o la autoevaluación");
-        }
-
-        // Registrar el documento
+        // Registrar el documento (las validaciones se hacen en el servicio)
         const documentoData = {
             id_practica: parseInt(id_practica),
             nombre_archivo,
             ruta_archivo,
             formato,
-            peso_mb: parseFloat(peso_mb),
-            estado_revision: "pendiente",
-            fecha_subida: new Date()
+            peso_mb: parseFloat(peso_mb)
         };
 
         const [documento, error] = await documentoService.registrarDocumento(documentoData);
