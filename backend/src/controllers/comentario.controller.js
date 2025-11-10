@@ -79,7 +79,8 @@ export async function deleteComentario(req, res) {
 
 export async function getComentariosByUsuarioId(req, res) {
     try {
-        const { usuarioId } = req.params;
+        // Si no hay usuarioId en params, usa el del usuario logueado (estudiante viendo sus comentarios)
+        const usuarioId = req.params.usuarioId || req.user._id;
         await comentarioIdValidation.validateAsync({ id: usuarioId });
         const comentarios = await getComentariosByUsuarioIdService(usuarioId);
         handleSuccess(res, 200, "Comentarios del usuario obtenidos exitosamente", comentarios);

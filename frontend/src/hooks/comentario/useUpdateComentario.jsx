@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { updateComentario } from "../../services/comentarioService";
+import { updateComentario } from '../../services/comentario.service.js';
 
 export function useUpdateComentario() {
     const [loading, setLoading] = useState(false);

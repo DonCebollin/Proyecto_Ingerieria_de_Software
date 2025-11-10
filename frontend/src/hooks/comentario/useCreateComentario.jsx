@@ -1,5 +1,5 @@
 import { useState} from "react";
-import { createComentario } from "../../services/comentarioService";
+import { createComentario } from '../../services/comentario.service.js';
 
 export function useCreateComentario() {
     const [loading, setLoading] = useState(false);
@@ -20,5 +20,5 @@ export function useCreateComentario() {
 
     return { handleCreateComentario, loading, error };
 }
-        return error.response.data;
+        
 

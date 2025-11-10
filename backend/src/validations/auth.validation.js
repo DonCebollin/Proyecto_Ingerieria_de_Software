@@ -38,7 +38,7 @@ export const authValidation = Joi.object({
       "string.max": "La contraseña debe tener como máximo 26 caracteres.",
       "string.pattern.base": "La contraseña solo puede contener letras y números.",
     }),
-}).unknown(false).messages({
+}).unknown(true).messages({
   "object.unknown": "No se permiten propiedades adicionales.",
 });
 
@@ -96,7 +96,7 @@ export const registerValidation = Joi.object({
       "string.pattern.base": "La contraseña solo puede contener letras y números.",
     }),
 })
-  .unknown(false)
+  .unknown(true)
   .messages({
   "object.unknown": "No se permiten propiedades adicionales.",
 });

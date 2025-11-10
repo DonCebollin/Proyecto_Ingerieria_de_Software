@@ -6,6 +6,6 @@ export async function encryptPassword(password) {
   return await bcrypt.hash(password, salt);
 }
 
-export async function comparePassword(password, receivedPassword) {
-  return await bcrypt.compare(password, receivedPassword);
+export async function comparePassword(receivedPassword, password) {
+  return await bcrypt.compare(receivedPassword, password);
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getAllComentarios } from "../../services/comentarioService";
+import { getAllComentarios } from '../../services/comentario.service.js';
 
 export function useGetAllComentarios() {
     const [loading, setLoading] = useState(false);

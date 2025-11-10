@@ -23,7 +23,7 @@ export async function loginService(user) {
       return [null, createErrorMessage("email", "El correo electrónico es incorrecto")];
     }
 
-    const isMatch = await comparePassword(password, userFound.password);
+        const isMatch = await comparePassword(password, userFound.password);
 
     if (!isMatch) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
@@ -75,11 +75,13 @@ export async function registerService(user) {
 
     if (existingRutUser) return [null, createErrorMessage("rut", "Rut ya asociado a una cuenta")];
 
+    const passwordEncrypt = await encryptPassword(user.password);
+
     const newUser = userRepository.create({
       nombreCompleto,
       email,
       rut,
-      password: await encryptPassword(user.password),
+      password: passwordEncrypt,
       rol: "usuario",
     });
 

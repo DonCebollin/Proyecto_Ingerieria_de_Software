@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { deleteComentario } from "../../services/comentarioService";
+import { deleteComentario } from '../../services/comentario.service.js';
 
 export function useDeleteComentario() {
     const [loading, setLoading] = useState(false);
