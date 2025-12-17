@@ -89,12 +89,12 @@ const Documentos = () => {
                                         window.open(getDocumentoPorTipo(0).url_archivo, "_blank")
                                     }
                                 >
-                                    Documento 1
+                                    Informe
                                 </button>
                             ) : (
                                 <>
                                     <label className="upload-btn">
-                                        Documento 1
+                                        Informe
                                         <input
                                             type="file"
                                             accept=".pdf,.docx"
@@ -125,12 +125,12 @@ const Documentos = () => {
                                         window.open(getDocumentoPorTipo(1).url_archivo, "_blank")
                                     }
                                 >
-                                    Documento 2
+                                    Autoevaluacion
                                 </button>
                             ) : (
                                 <>
                                     <label className="upload-btn">
-                                        Documento 2
+                                        Autoevaluacion
                                         <input
                                             type="file"
                                             accept=".pdf,.docx"
@@ -149,6 +149,8 @@ const Documentos = () => {
                                             </button>
                                         </div>
                                     )}
+                                    <label className="">  Nota</label>
+
                                 </>
                             )}
                         </div>

@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { uploadFields } from "../middlewares/uploadfile.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { isDocente, isEstudiante } from "../middlewares/authorization.middleware.js";
+import { isDocente, isDocenteOrEstudiante, isEstudiante } from "../middlewares/authorization.middleware.js";
 import {
   getDocumentoById,
   getDocumentos,
@@ -16,13 +16,6 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsPath = path.resolve(__dirname, "../../../uploads");
-
-const isDocenteOrEstudiante = async (req, res, next) => {
-    await isDocente(req, res, (err) => {
-        if (!err) return next();
-        isEstudiante(req, res, next);
-    });
-};
 
 const router = Router();
 

@@ -45,6 +45,7 @@ const router = createBrowserRouter([
                     </ProtectedRoute>
                 )
             }
+
         ]
     },
     {

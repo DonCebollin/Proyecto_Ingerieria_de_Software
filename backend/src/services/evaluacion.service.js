@@ -13,7 +13,6 @@ export async function crearEvaluacionService(data) {
         id_usuario: data.id_usuario,
       },
     });
-
     if (evaluacionExistente) {
       Object.assign(evaluacionExistente, {
         nota: data.nota,
@@ -23,7 +22,6 @@ export async function crearEvaluacionService(data) {
       await repo.save(evaluacionExistente);
       return [evaluacionExistente, null];
     }
-
     const nuevaEvaluacion = repo.create(data);
     await repo.save(nuevaEvaluacion);
     return [nuevaEvaluacion, null];
@@ -33,7 +31,7 @@ export async function crearEvaluacionService(data) {
   }
 }
 
-export async function getEvaluacionesByDocumentoService(id_documento) {
+export async function getEvaluacionByDocumentoService(id_documento) {
   try {
     const repo = AppDataSource.getRepository(Evaluacion);
     const evaluaciones = await repo.find({
@@ -45,20 +43,6 @@ export async function getEvaluacionesByDocumentoService(id_documento) {
   } catch (error) {
     console.error("Error al obtener evaluaciones:", error);
     return [null, "Error al consultar las evaluaciones"];
-  }
-}
-
-export async function getEvaluacionByIdService(id_evaluacion) {
-  try {
-    const repo = AppDataSource.getRepository(Evaluacion);
-    const evaluacion = await repo.findOne({
-      where: { id_evaluacion },
-    });
-    if (!evaluacion) return [null, "Evaluación no encontrada"];
-    return [evaluacion, null];
-  } catch (error) {
-    console.error("Error al obtener evaluación:", error);
-    return [null, "Error al consultar la evaluación"];
   }
 }
 

@@ -30,22 +30,82 @@ const Documentos = () => {
 
     const { handleGetUsers } = useUsers();
 
+    // 🔹 Datos de ejemplo (solo para pruebas sin backend)
+    const documentosEjemplo = [
+        {
+            id: 1,
+            nombre: "Informe de práctica - Ana Torres",
+            estado: "Pendiente",
+            id_practica: 1,
+            archivos: ["informe_ana.pdf","bitacora_carlos.pdf"],
+            comentario: "Pendiente de revisión inicial.",
+        },
+        {
+            id: 2,
+            nombre: "Bitácora semanal - Carlos Pérez",
+            estado: "Revisado",
+            id_practica: 1,
+            archivos: ["bitacora_carlos.pdf"],
+            comentario: "Buen trabajo, faltan firmas del tutor.",
+        },
+        {
+            id: 3,
+            nombre: "Proyecto final - María Gómez",
+            estado: "Pendiente",
+            id_practica: 1,
+            archivos: ["proyecto_maria.docx","bitacora_carlos.pdf"],
+            comentario: "",
+        },
+        {
+            id: 4,
+            nombre: "Evaluación práctica - Luis Contreras",
+            estado: "Revisado",
+            id_practica: 1,
+            archivos: ["evaluacion_luis.pdf"],
+            comentario: "Excelente desempeño.",
+        },
+        {
+            id: 5,
+            nombre: "Informe técnico - Sofía Ramírez",
+            estado: "Pendiente",
+            id_practica: 1,
+            archivos: ["informe_sofia.pdf"],
+            comentario: "",
+        },
+        {
+            id: 6,
+            nombre: "Bitácora de terreno - Diego Fuentes",
+            estado: "Revisado",
+            id_practica: 1,
+            archivos: ["bitacora_diego.docx"],
+            comentario: "Completa y clara, buen formato.",
+        },
+        {
+            id: 7,
+            nombre: "Resumen de práctica - Valentina Silva",
+            estado: "Pendiente",
+            id_practica: 1,
+            archivos: ["resumen_valentina.pdf"],
+            comentario: "Debe incluir resumen ejecutivo.",
+        },
+    ];
+
     useEffect(() => {
         const fetchData = async () => {
-            await handleGetUsers(); // opcional
-            const resDocs = await handleGetDocumentos();
+            // 🔹 Mostrar los documentos de ejemplo (sin backend)
+            setDocuments(documentosEjemplo);
 
-            // ✅ Filtro por id_practica = 1 (o el id de la práctica del docente)
-            const todosDocs =
-                Array.isArray(resDocs) ? resDocs : Array.isArray(resDocs?.data) ? resDocs.data : [];
-
-            const docsFiltrados = todosDocs.filter((doc) => doc.id_practica === 1);
-            setDocuments(docsFiltrados);
-
-            await handleGetEvaluacionesByDocente();
+            // Si quieres volver a usar los hooks del backend:
+            // await handleGetUsers();
+            // const resDocs = await handleGetDocumentos();
+            // const todosDocs =
+            //     Array.isArray(resDocs) ? resDocs : Array.isArray(resDocs?.data) ? resDocs.data : [];
+            // const docsFiltrados = todosDocs.filter((doc) => doc.id_practica === 1);
+            // setDocuments(docsFiltrados);
+            // await handleGetEvaluacionesByDocente();
         };
         fetchData();
-    }, [handleGetDocumentos, handleGetEvaluacionesByDocente, handleGetUsers]);
+    }, []);
 
     const handleFilterChange = (e) => {
         setFilter(e.target.value);
@@ -62,7 +122,7 @@ const Documentos = () => {
     };
 
     const handleAddNote = async (doc) => {
-        const evaluacionExistente = evaluaciones.find((e) => e.id_documento === doc.id);
+        const evaluacionExistente = evaluaciones?.find((e) => e.id_documento === doc.id);
         if (evaluacionExistente) {
             await handleUpdateEvaluacion(evaluacionExistente, doc);
         } else {
@@ -110,6 +170,15 @@ const Documentos = () => {
                                                 ? `${doc.nombre.slice(0, 25)}...`
                                                 : doc.nombre}
                                         </strong>
+                                    </p>
+                                </div>
+
+                                <div className="doc-alumno-info">
+                                    <p>
+                                        <strong>Alumno:</strong>{" "}
+                                        {doc.nombre.includes(" - ")
+                                            ? doc.nombre.split(" - ")[1]
+                                            : "No especificado"}
                                     </p>
                                 </div>
 
@@ -167,9 +236,7 @@ const Documentos = () => {
                     </div>
 
                     <button onClick={() => handlePageChange(1)}>Primero</button>
-                    <button onClick={() => handlePageChange(currentPage - 1)}>
-                        {"<"}
-                    </button>
+                    <button onClick={() => handlePageChange(currentPage - 1)}>{"<"}</button>
                     {[...Array(totalPages)].map((_, i) => (
                         <button
                             key={i}
@@ -179,9 +246,7 @@ const Documentos = () => {
                             {i + 1}
                         </button>
                     ))}
-                    <button onClick={() => handlePageChange(currentPage + 1)}>
-                        {">"}
-                    </button>
+                    <button onClick={() => handlePageChange(currentPage + 1)}>{">"}</button>
                     <button onClick={() => handlePageChange(totalPages)}>Último</button>
                 </div>
             </div>

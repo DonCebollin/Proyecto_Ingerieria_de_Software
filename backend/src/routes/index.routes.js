@@ -12,6 +12,6 @@ router
   .use("/auth", authRoutes)
   .use("/user", userRoutes)
   .use("/documentos", documentoRoutes)
-  .use("/evaluaciones", evaluacionRoutes);
+  .use("/evaluaciones", evaluacionRoutes)
 
 export default router;

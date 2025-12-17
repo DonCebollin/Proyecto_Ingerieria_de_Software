@@ -2,9 +2,9 @@
 import Joi from "joi";
 
 export const evaluacionBodyValidation = Joi.object({
-  id_practica: Joi.number().integer().required().messages({
-    "any.required": "El id de la práctica es obligatorio",
-    "number.base": "El id de la práctica debe ser numérico",
+  id_documento: Joi.number().integer().required().messages({
+    "any.required": "El id del documento es obligatorio",
+    "number.base": "El id del documento debe ser numérico",
   }),
   nota: Joi.number().min(1).max(7).required().messages({
     "number.base": "La nota debe ser un número",

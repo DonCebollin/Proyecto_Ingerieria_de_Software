@@ -3,9 +3,8 @@
 import {
   crearEvaluacionService,
   deleteEvaluacionService,
-  getEvaluacionByIdService,
+  getEvaluacionByDocumentoService,
   getEvaluacionesByDocenteService,
-  getEvaluacionesByDocumentoService,
   updateEvaluacionService,
 } from "../services/evaluacion.service.js";
 
@@ -31,11 +30,13 @@ export async function crearEvaluacion(req, res) {
     const { error } = evaluacionBodyValidation.validate(req.body);
     if (error) return handleErrorClient(res, 400, error.message);
 
-    const evaluacionData = {
-      ...req.body,
-      id_usuario,
-      rol_usuario,
-    };
+      const evaluacionData = {
+          id_documento: req.body.id_documento,
+          nota: req.body.nota,
+          comentario: req.body.comentario,
+          id_usuario,
+          rol_usuario,
+      };
 
     const [evaluacion, errorEval] = await crearEvaluacionService(evaluacionData);
     if (errorEval) return handleErrorClient(res, 500, errorEval);
@@ -46,28 +47,15 @@ export async function crearEvaluacion(req, res) {
   }
 }
 
-export async function getEvaluacionesByDocumento(req, res) {
+export async function getEvaluacionByDocumento(req, res) {
   try {
     const { id_documento } = req.params;
 
-    const [evaluaciones, errorEval] = await getEvaluacionesByDocumentoService(id_documento);
+    const [evaluaciones, errorEval] = await getEvaluacionByDocumentoService(id_documento);
     if (errorEval && evaluaciones.length === 0)
       return handleErrorClient(res, 404, errorEval);
 
     handleSuccess(res, 200, "Evaluaciones encontradas", evaluaciones);
-  } catch (error) {
-    handleErrorServer(res, 500, error.message);
-  }
-}
-
-export async function getEvaluacionById(req, res) {
-  try {
-    const { id } = req.params;
-
-    const [evaluacion, errorEval] = await getEvaluacionByIdService(id);
-    if (errorEval) return handleErrorClient(res, 404, errorEval);
-
-    handleSuccess(res, 200, "Evaluación encontrada", evaluacion);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
