@@ -2,7 +2,6 @@
 
 import {
   crearEvaluacionService,
-  deleteEvaluacionService,
   getEvaluacionByDocumentoService,
   getEvaluacionesByDocenteService,
   updateEvaluacionService,
@@ -72,19 +71,6 @@ export async function updateEvaluacion(req, res) {
     if (errorEval) return handleErrorClient(res, 404, errorEval);
 
     handleSuccess(res, 200, "Evaluación actualizada correctamente", evaluacion);
-  } catch (error) {
-    handleErrorServer(res, 500, error.message);
-  }
-}
-
-export async function deleteEvaluacion(req, res) {
-  try {
-    const { id } = req.params;
-
-    const [evaluacion, errorEval] = await deleteEvaluacionService(id);
-    if (errorEval) return handleErrorClient(res, 404, errorEval);
-
-    handleSuccess(res, 200, "Evaluación eliminada correctamente", evaluacion);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }

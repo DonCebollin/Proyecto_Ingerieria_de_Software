@@ -61,20 +61,6 @@ export async function updateEvaluacionService(id_evaluacion, data) {
   }
 }
 
-export async function deleteEvaluacionService(id_evaluacion) {
-  try {
-    const repo = AppDataSource.getRepository(Evaluacion);
-    const evaluacion = await repo.findOne({ where: { id_evaluacion } });
-    if (!evaluacion) return [null, "Evaluación no encontrada"];
-
-    await repo.remove(evaluacion);
-    return [evaluacion, null];
-  } catch (error) {
-    console.error("Error al eliminar evaluación:", error);
-    return [null, "Error al eliminar la evaluación"];
-  }
-}
-
 export async function getEvaluacionesByDocenteService(id_usuario) {
   try {
     const repo = AppDataSource.getRepository(Evaluacion);

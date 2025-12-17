@@ -5,7 +5,6 @@ import { isDocente, isDocenteOrEstudiante, isEstudiante } from "../middlewares/a
 
 import {
   crearEvaluacion,
-  deleteEvaluacion,
   getEvaluacionByDocumento,
   getEvaluacionesByDocente,
   updateEvaluacion,
@@ -17,11 +16,8 @@ router
   .use(authenticateJwt)
 
 router.post("/",authenticateJwt, isDocenteOrEstudiante, crearEvaluacion);
-
 router.get("/documento/:id_documento",authenticateJwt, isDocenteOrEstudiante, getEvaluacionByDocumento);
-
 router.get("/docente",authenticateJwt, isDocente, getEvaluacionesByDocente);
 router.patch("/:id",authenticateJwt, isDocente, updateEvaluacion);
-router.delete("/:id",authenticateJwt, isDocente, deleteEvaluacion);
 
 export default router;
